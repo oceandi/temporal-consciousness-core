@@ -1,0 +1,10 @@
+[Unit]
+Description=Temporal Consciousness Core
+
+[Service]
+ExecStart=C:\Users\EXT03426951\AppData\Local\Microsoft\WindowsApps\python.exe C:\Users\EXT03426951\Documents\GitHub\temporal-consciousness-core
+WorkingDirectory=C:\Users\EXT03426951\Documents\GitHub\temporal-consciousness-core
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
