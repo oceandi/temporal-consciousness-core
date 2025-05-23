@@ -1,8 +1,13 @@
 import json
 import os
 from datetime import datetime, timezone
-import torch.nn as nn
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import asyncio
+import pinecone
+import numpy as np
+from pinecone import Pinecone, ServerlessSpec
 
 # --- MODEL TANIMI ---
 class MyModel(nn.Module):
@@ -11,6 +16,45 @@ class MyModel(nn.Module):
         self.linear = nn.Linear(10, 1)
     def forward(self, x):
         return self.linear(x)
+
+class CausalMemoryAttention(nn.Module):
+    def __init__(self, embed_dim):
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.query_proj = nn.Linear(embed_dim, embed_dim)
+        self.key_proj = nn.Linear(embed_dim, embed_dim)
+        self.value_proj = nn.Linear(embed_dim, embed_dim)
+
+    def forward(self, query, memory_bank, timestamps, current_time, decay_rate=0.01):
+        """
+        query: [batch, embed_dim]
+        memory_bank: [batch, seq_len, embed_dim]
+        timestamps: [batch, seq_len] (datetime or float)
+        current_time: [batch] (datetime or float)
+        """
+        # Projeksiyonlar
+        Q = self.query_proj(query).unsqueeze(1)  # [batch, 1, embed_dim]
+        K = self.key_proj(memory_bank)           # [batch, seq_len, embed_dim]
+        V = self.value_proj(memory_bank)         # [batch, seq_len, embed_dim]
+
+        # Zaman farkı ve zamansal ağırlık
+        time_deltas = (current_time.unsqueeze(1) - timestamps)  # [batch, seq_len]
+        temporal_weights = torch.exp(-decay_rate * time_deltas.float())  # [batch, seq_len]
+
+        # Causal mask: sadece geçmişe bak
+        seq_len = memory_bank.size(1)
+        causal_mask = torch.tril(torch.ones(seq_len, seq_len)).to(memory_bank.device)  # [seq_len, seq_len]
+
+        # Attention skorları
+        attn_scores = torch.matmul(Q, K.transpose(-2, -1)).squeeze(1) / (self.embed_dim ** 0.5)  # [batch, seq_len]
+        attn_scores = attn_scores * temporal_weights  # Zamansal ağırlık uygula
+
+        # Maskeyi uygula (geleceğe bakışı engelle)
+        attn_scores = attn_scores.masked_fill(causal_mask[-1] == 0, float('-inf'))
+
+        attn_weights = F.softmax(attn_scores, dim=-1)  # [batch, seq_len]
+        attended = torch.bmm(attn_weights.unsqueeze(1), V).squeeze(1)  # [batch, embed_dim]
+        return attended, attn_weights
 
 # --- BELLEK ve ÇEKİRDEK SINIFLARI ---
 class EpisodicMemoryPersistence:
@@ -67,7 +111,21 @@ def attention(query, memory_bank, weights):
     return memory_bank
 
 def calculate_integrated_information(network_state):
-    return float(len(network_state))
+    """
+    Basit bir entegre bilgi ölçümü:
+    - Ağın aktivasyon çeşitliliği (entropy)
+    - Bağlantı yoğunluğu (örnek: semantic memory'deki farklı kavram sayısı)
+    """
+    if isinstance(network_state, list):
+        # Örnek: aktivasyon çeşitliliği
+        activations = np.array([hash(str(x)) % 1000 for x in network_state])
+        entropy = np.std(activations) / (np.mean(activations) + 1e-6)
+        return float(entropy)
+    elif isinstance(network_state, dict):
+        # Örnek: semantic memory'deki kavram çeşitliliği
+        return float(len(network_state)) / 100.0
+    else:
+        return 0.0
 
 consolidation_interval = 60
 consciousness_threshold = 0.5
@@ -88,6 +146,13 @@ class TemporalNeuralCore:
         if os.path.exists("model.pth"):
             self.model.load_state_dict(torch.load("model.pth"))
             self.model.eval()
+        # Replay loop başlatıcı
+        self.replay_task = None
+        # Pinecone ayarlarını doldur
+        self.vector_memory = VectorMemoryBank(
+            api_key="pcsk_5EJqd3_3rt39ATdMZuq2sqdwJ6hZDS2yp1emEHtpJqjnqEh8zUGpRoFfqYZseKuoyqxgM7",
+            environment="us-east-1"
+        )
 
     def global_workspace(self, events):
         return self.temporal_binder.bind(events)
@@ -108,8 +173,66 @@ class TemporalNeuralCore:
         self.episodic_persistence.save_event(input_stream)
         return self.generate_with_continuity(conscious_broadcast)
 
+    async def episodic_replay_loop(self, interval=consolidation_interval):
+        while True:
+            # Son 3 önemli anıyı çek
+            memories = self.episodic_persistence.load_events(limit=3)
+            for mem in memories:
+                # Konsolidasyon: semantic ve working memory'e tekrar ekle
+                self.semantic_memory.update(mem["event"])
+                self.working_memory.focus(mem["event"])
+                # Sentetik deneyim üret (örnek: "rüya" gibi)
+                synthetic = f"SENTETİK: {mem['event']} + replay"
+                self.semantic_memory.update(synthetic)
+            # Konsolidasyon sonrası phi ölçümü
+            phi = phi_consciousness_measure(self.semantic_memory.knowledge)
+            print(f"Replay sonrası bilinçlilik ölçümü (phi): {phi}")
+            await asyncio.sleep(interval)
+
+    def start_replay_loop(self):
+        if self.replay_task is None:
+            self.replay_task = asyncio.create_task(self.episodic_replay_loop())
+
+    def store_event_vector(self, event, embedding):
+        event_id = str(hash(event))
+        self.vector_memory.upsert_event(event_id, embedding, metadata={"event": event})
+
+    def find_similar_events(self, embedding):
+        return self.vector_memory.query_similar(embedding)
+
+class VectorMemoryBank:
+    def __init__(self, api_key, environment, index_name="temporal-memory"):
+        # Pinecone nesnesi oluştur
+        self.pc = Pinecone(api_key=api_key)
+        # Index var mı kontrol et, yoksa oluştur
+        if index_name not in self.pc.list_indexes().names():
+            self.pc.create_index(
+                name=index_name,
+                dimension=10,  # embedding boyutu
+                metric='euclidean',
+                spec=ServerlessSpec(
+                    cloud='aws',
+                    region=environment  # ör: "us-east-1"
+                )
+            )
+        self.index = self.pc.Index(index_name)
+
+    def upsert_event(self, event_id, embedding, metadata=None):
+        self.index.upsert(vectors=[{
+            "id": event_id,
+            "values": embedding,
+            "metadata": metadata or {}
+        }])
+
+    def query_similar(self, embedding, top_k=3):
+        return self.index.query(vector=embedding, top_k=top_k, include_metadata=True)
+
 def phi_consciousness_measure(network_state):
+    """
+    Bilinçlilik eşiğini geçen entegre bilgiye sahip mi?
+    """
     phi = calculate_integrated_information(network_state)
+    print(f"Integrated information (phi): {phi:.3f}")
     return phi > consciousness_threshold
 
 # --- DEMO AKIŞI ---
