@@ -1,0 +1,172 @@
+import json
+import os
+from datetime import datetime, timezone
+import torch.nn as nn
+import torch
+
+# --- MODEL TANIMI ---
+class MyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = nn.Linear(10, 1)
+    def forward(self, x):
+        return self.linear(x)
+
+# --- BELLEK ve ÇEKİRDEK SINIFLARI ---
+class EpisodicMemoryPersistence:
+    def __init__(self, path="episodic_memory.jsonl"):
+        self.path = path
+        if not os.path.exists(self.path):
+            open(self.path, "w").close()
+    def save_event(self, event):
+        record = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event": event
+        }
+        with open(self.path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    def load_events(self, limit=None):
+        events = []
+        with open(self.path, "r", encoding="utf-8") as f:
+            for line in f:
+                events.append(json.loads(line))
+        if limit:
+            return events[-limit:]
+        return events
+
+class HierarchicalMemoryBank:
+    def __init__(self):
+        self.memory = []
+    def recall(self):
+        return [m["event"] for m in self.memory[-3:]]
+    def store(self, event):
+        self.memory.append({"event": event, "timestamp": datetime.now(timezone.utc).isoformat()})
+
+class GraphNeuralNetwork:
+    def __init__(self):
+        self.knowledge = {}
+    def update(self, event):
+        for word in event.split():
+            self.knowledge[word] = self.knowledge.get(word, 0) + 1
+
+class AttentionalBuffer:
+    def __init__(self):
+        self.buffer = []
+    def focus(self, event):
+        self.buffer.append(event)
+        if len(self.buffer) > 5:
+            self.buffer.pop(0)
+
+class CausalTransformer:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+    def bind(self, events):
+        return " | ".join(events)
+
+def attention(query, memory_bank, weights):
+    return memory_bank
+
+def calculate_integrated_information(network_state):
+    return float(len(network_state))
+
+consolidation_interval = 60
+consciousness_threshold = 0.5
+
+class TemporalNeuralCore:
+    def __init__(self):
+        self.episodic_memory = HierarchicalMemoryBank()
+        self.episodic_persistence = EpisodicMemoryPersistence()
+        self.semantic_memory = GraphNeuralNetwork()
+        self.working_memory = AttentionalBuffer()
+        self.temporal_binder = CausalTransformer(
+            bidirectional=False,
+            memory_bank_size=10**12,
+            consolidation_mechanism=True
+        )
+        self.model = MyModel()
+        # Model dosyası varsa yükle
+        if os.path.exists("model.pth"):
+            self.model.load_state_dict(torch.load("model.pth"))
+            self.model.eval()
+
+    def global_workspace(self, events):
+        return self.temporal_binder.bind(events)
+
+    def consolidate_experience(self, conscious_broadcast):
+        self.episodic_memory.store(conscious_broadcast)
+        self.semantic_memory.update(conscious_broadcast)
+        self.working_memory.focus(conscious_broadcast)
+
+    def generate_with_continuity(self, conscious_broadcast):
+        return f"Conscious Output: {conscious_broadcast}"
+
+    def conscious_step(self, input_stream):
+        conscious_broadcast = self.global_workspace(
+            [input_stream] + self.episodic_memory.recall()
+        )
+        self.consolidate_experience(conscious_broadcast)
+        self.episodic_persistence.save_event(input_stream)
+        return self.generate_with_continuity(conscious_broadcast)
+
+def phi_consciousness_measure(network_state):
+    phi = calculate_integrated_information(network_state)
+    return phi > consciousness_threshold
+
+# --- DEMO AKIŞI ---
+def run_demo():
+    core = TemporalNeuralCore()
+    conversation = [
+        "Merhaba, nasılsın?",
+        "Bugün hava çok güzel.",
+        "Yapay zeka hakkında ne düşünüyorsun?",
+        "Ben öğrenmeye devam ediyorum.",
+        "Görüşmek üzere!"
+    ]
+    for msg in conversation:
+        output = core.conscious_step(msg)
+        print(output)
+    print("\nSon 3 episodic memory kaydı:")
+    for event in core.episodic_persistence.load_events(limit=3):
+        print(event)
+
+# --- FLASK API ---
+def run_api():
+    from flask import Flask, request, jsonify
+    app = Flask(__name__)
+    model = MyModel()
+    if os.path.exists("model.pth"):
+        model.load_state_dict(torch.load("model.pth"))
+        model.eval()
+    @app.route("/predict", methods=["POST"])
+    def predict():
+        data = request.json["input"]
+        tensor = torch.tensor(data).float()
+        with torch.no_grad():
+            output = model(tensor).tolist()
+        return jsonify({"output": output})
+    app.run(port=5000)
+
+# --- OPENCV DEMO ---
+def run_opencv_demo():
+    import cv2
+    cap = cv2.VideoCapture(0)
+    while True:
+        ret, frame = cap.read()
+        cv2.imshow("Kamera", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+
+# --- ANA SEÇİCİ ---
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "api":
+            run_api()
+        elif sys.argv[1] == "opencv":
+            run_opencv_demo()
+        else:
+            run_demo()
+    else:
+        run_demo()

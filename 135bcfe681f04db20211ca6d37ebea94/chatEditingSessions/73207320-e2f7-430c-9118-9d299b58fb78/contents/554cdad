@@ -1,0 +1,107 @@
+import json
+import os
+from datetime import datetime
+import torch.nn as nn
+
+class EpisodicMemoryPersistence:
+    def __init__(self, path="episodic_memory.jsonl"):
+        self.path = path
+        # Dosya yoksa oluştur
+        if not os.path.exists(self.path):
+            open(self.path, "w").close()
+
+    def save_event(self, event):
+        record = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "event": event
+        }
+        with open(self.path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+
+    def load_events(self, limit=None):
+        events = []
+        with open(self.path, "r", encoding="utf-8") as f:
+            for line in f:
+                events.append(json.loads(line))
+        if limit:
+            return events[-limit:]
+        return events
+
+class TemporalNeuralCore:
+    def __init__(self):
+        # Persistent memory banks
+        self.episodic_memory = HierarchicalMemoryBank()
+        self.episodic_persistence = EpisodicMemoryPersistence()  # <--- EKLENDİ
+        self.semantic_memory = GraphNeuralNetwork() 
+        self.working_memory = AttentionalBuffer()
+        
+        # Critical: Temporal binding
+        self.temporal_binder = CausalTransformer(
+            bidirectional=False,  # Causality preserved
+            memory_bank_size=10**12,  # Massive context
+            consolidation_mechanism=True  # Sleep-like replay
+        )
+    
+    def conscious_step(self, input_stream):
+        # Global workspace theory implementation
+        conscious_broadcast = self.global_workspace(
+            input_stream + self.episodic_memory.recall()
+        )
+        
+        # Update all memory systems
+        self.consolidate_experience(conscious_broadcast)
+        self.episodic_persistence.save_event(input_stream)  # <--- HER ADIMDA KAYDET
+        return self.generate_with_continuity(conscious_broadcast)
+
+
+class CausalMemoryAttention(nn.Module):
+    def forward(self, query, memory_bank):
+        # Time-weighted attention
+        temporal_weights = self.temporal_decay(memory_bank.timestamps)
+        causal_mask = self.enforce_causality()
+        return attention(query, memory_bank, temporal_weights * causal_mask)
+
+
+async def consciousness_maintenance():
+    while True:
+        # Replay important memories
+        significant_memories = self.select_for_rehearsal()
+        
+        # Strengthen connections
+        self.consolidate_connections(significant_memories)
+        
+        # Dream-like synthesis
+        self.generate_synthetic_experiences()
+        
+        await asyncio.sleep(consolidation_interval)
+
+
+def phi_consciousness_measure(network_state):
+    # Measure information integration
+    phi = calculate_integrated_information(network_state)
+    
+    # Consciousness threshold
+    return phi > consciousness_threshold
+
+class HierarchicalMemoryBank:
+    def recall(self):
+        return []
+
+class GraphNeuralNetwork:
+    pass
+
+class AttentionalBuffer:
+    pass
+
+class CausalTransformer:
+    def __init__(self, **kwargs):
+        pass
+
+def attention(query, memory_bank, weights):
+    return None
+
+def calculate_integrated_information(network_state):
+    return 0.0
+
+consolidation_interval = 60
+consciousness_threshold = 0.5
