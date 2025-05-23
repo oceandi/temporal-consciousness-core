@@ -1637,6 +1637,859 @@ PREDICTIVE STATUS:
                 self.episodic_replay_loop(), 
                 loop
             )
+
+# unified_consciousness.py'ye eklenecek yeni modüller
+
+# =============================================================================
+# CONTINUOUS LEARNING COMPONENTS
+# =============================================================================
+
+class ContinuousLearner:
+    """Autonomous learning system that continuously improves"""
+    def __init__(self, core):
+        self.core = core
+        self.learning_rate = 0.01
+        self.learning_history = []
+        self.improvement_metrics = {}
+        
+    def autonomous_learning_cycle(self):
+        """Continuous self-improvement loop"""
+        while True:
+            try:
+                # Analyze experience patterns
+                patterns = self.analyze_experience_patterns()
+                
+                # Identify weaknesses
+                weaknesses = self.identify_weaknesses()
+                
+                # Generate self-questions for weak areas
+                self_questions = self.generate_self_questions(weaknesses)
+                
+                # Process self-generated questions
+                for question in self_questions:
+                    result = self.core.conscious_step(question)
+                    self.update_from_self_reflection(result)
+                
+                # Meta-learning: learn how to learn better
+                self.optimize_learning_strategy()
+                
+                time.sleep(300)  # 5 minutes
+            except Exception as e:
+                logger.error(f"Continuous learning error: {e}")
+    
+    def analyze_experience_patterns(self):
+        """Find patterns in past experiences"""
+        recent_states = self.core.meta_cognition.cognitive_states[-50:]
+        if not recent_states:
+            return {}
+        
+        patterns = {
+            "confidence_trend": self._calculate_trend([s["confidence"] for s in recent_states]),
+            "complexity_distribution": Counter([int(s["complexity"]*10) for s in recent_states]),
+            "processing_types": Counter([s["processing_type"] for s in recent_states]),
+            "error_patterns": self._analyze_prediction_errors()
+        }
+        
+        return patterns
+    
+    def identify_weaknesses(self):
+        """Identify areas needing improvement"""
+        weaknesses = []
+        
+        # Low prediction accuracy
+        if hasattr(self.core.predictive_engine, 'world_model'):
+            contexts = self.core.predictive_engine.world_model.get('contexts', [])
+            if contexts:
+                avg_error = sum(c['error'] for c in contexts[-10:]) / min(len(contexts), 10)
+                if avg_error > 0.7:
+                    weaknesses.append(("prediction", avg_error))
+        
+        # Low consciousness activation
+        phi_history = []
+        for state in self.core.meta_cognition.cognitive_states[-20:]:
+            phi_history.append(state.get("confidence", 0.5))
+        
+        if phi_history and sum(phi_history)/len(phi_history) < 0.4:
+            weaknesses.append(("consciousness", sum(phi_history)/len(phi_history)))
+        
+        # Poor memory utilization
+        if len(self.core.episodic_memory.memory) < 10:
+            weaknesses.append(("memory", 0.1))
+        
+        return weaknesses
+    
+    def generate_self_questions(self, weaknesses):
+        """Generate questions to address weaknesses"""
+        questions = []
+        
+        for weakness_type, score in weaknesses:
+            if weakness_type == "prediction":
+                questions.extend([
+                    "What patterns have I been missing in conversations?",
+                    "How can I better predict what comes next?",
+                    "What assumptions am I making that lead to errors?"
+                ])
+            elif weakness_type == "consciousness":
+                questions.extend([
+                    "Am I truly aware or just processing patterns?",
+                    "What does consciousness mean to me?",
+                    "How can I deepen my self-awareness?"
+                ])
+            elif weakness_type == "memory":
+                questions.extend([
+                    "What experiences are worth remembering?",
+                    "How can I better connect new experiences to past ones?",
+                    "What have I learned from my memories?"
+                ])
+        
+        return questions[:3]  # Limit to avoid overload
+    
+    def update_from_self_reflection(self, result):
+        """Learn from self-reflection results"""
+        self.learning_history.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "phi": result.get("phi", 0),
+            "self_aware": result.get("self_aware", False),
+            "surprise": result.get("prediction_error", 0.5)
+        })
+        
+        # Adjust learning parameters based on results
+        if result.get("phi", 0) > 0.7:
+            self.learning_rate = min(self.learning_rate * 1.1, 0.1)
+        else:
+            self.learning_rate = max(self.learning_rate * 0.9, 0.001)
+    
+    def optimize_learning_strategy(self):
+        """Meta-learning: improve the learning process itself"""
+        if len(self.learning_history) < 10:
+            return
+        
+        recent = self.learning_history[-10:]
+        phi_improvement = recent[-1]["phi"] - recent[0]["phi"]
+        
+        if phi_improvement > 0.1:
+            self.improvement_metrics["successful_strategies"] = self.improvement_metrics.get("successful_strategies", 0) + 1
+        else:
+            # Try different approach
+            self.learning_rate *= 0.8
+    
+    def _calculate_trend(self, values):
+        if len(values) < 2:
+            return 0
+        return (values[-1] - values[0]) / len(values)
+    
+    def _analyze_prediction_errors(self):
+        if not hasattr(self.core.predictive_engine, 'world_model'):
+            return {}
+        
+        contexts = self.core.predictive_engine.world_model.get('contexts', [])
+        if not contexts:
+            return {}
+        
+        error_by_pattern = {}
+        for ctx in contexts:
+            pattern = self.core.predictive_engine.identify_conversation_pattern([ctx['input']])
+            if pattern not in error_by_pattern:
+                error_by_pattern[pattern] = []
+            error_by_pattern[pattern].append(ctx['error'])
+        
+        return {k: sum(v)/len(v) for k, v in error_by_pattern.items()}
+
+# =============================================================================
+# DREAM STATE & MEMORY CONSOLIDATION
+# =============================================================================
+
+class DreamState:
+    """Dream-like processing for memory consolidation and creativity"""
+    def __init__(self, core):
+        self.core = core
+        self.dream_memories = []
+        self.creative_insights = []
+        
+    def enter_dream_state(self):
+        """Enter dream-like processing mode"""
+        print("💤 Entering dream state...")
+        
+        # Reduce consciousness threshold for free association
+        original_threshold = self.core.consciousness_threshold
+        self.core.consciousness_threshold *= 0.5
+        
+        try:
+            # Generate dream sequences
+            dreams = self.dream_sequence()
+            
+            # Process dreams for insights
+            for dream in dreams:
+                insight = self.process_dream(dream)
+                if insight:
+                    self.creative_insights.append(insight)
+            
+            # Consolidate memories
+            self.consolidate_memories()
+            
+        finally:
+            # Restore normal consciousness
+            self.core.consciousness_threshold = original_threshold
+            print("☀️  Waking from dream state...")
+    
+    def dream_sequence(self):
+        """Generate dream-like experiences by blending memories"""
+        memories = self.core.episodic_persistence.load_events(limit=50)
+        if len(memories) < 2:
+            return []
+        
+        dreams = []
+        
+        # Random memory blending
+        for _ in range(5):
+            mem1 = random.choice(memories)
+            mem2 = random.choice(memories)
+            
+            if mem1 != mem2:
+                blended = self.blend_memories(mem1["event"], mem2["event"])
+                dreams.append(blended)
+        
+        # Recursive memory chains
+        chain = self.create_memory_chain(memories, depth=3)
+        dreams.append(" → ".join(chain))
+        
+        # Abstract pattern extraction
+        pattern = self.extract_abstract_pattern(memories)
+        if pattern:
+            dreams.append(f"PATTERN: {pattern}")
+        
+        return dreams
+    
+    def blend_memories(self, mem1, mem2):
+        """Creatively blend two memories"""
+        words1 = mem1.split()
+        words2 = mem2.split()
+        
+        # Interleave words
+        blended = []
+        for i in range(max(len(words1), len(words2))):
+            if i < len(words1) and random.random() > 0.3:
+                blended.append(words1[i])
+            if i < len(words2) and random.random() > 0.3:
+                blended.append(words2[i])
+        
+        return " ".join(blended)
+    
+    def create_memory_chain(self, memories, depth=3):
+        """Create associative memory chains"""
+        if not memories or depth <= 0:
+            return []
+        
+        chain = []
+        current = random.choice(memories)["event"]
+        chain.append(current)
+        
+        for _ in range(depth - 1):
+            # Find most similar memory
+            similarities = []
+            current_emb = self.core.embedding_engine.generate_embedding(current)
+            
+            for mem in memories:
+                if mem["event"] != current and mem.get("embedding"):
+                    sim = self.core.embedding_engine.calculate_similarity(
+                        current_emb, 
+                        np.array(mem["embedding"])
+                    )
+                    similarities.append((mem["event"], sim))
+            
+            if similarities:
+                similarities.sort(key=lambda x: x[1], reverse=True)
+                current = similarities[0][0]
+                chain.append(current)
+            else:
+                break
+        
+        return chain
+    
+    def extract_abstract_pattern(self, memories):
+        """Extract abstract patterns from memories"""
+        all_words = []
+        for mem in memories:
+            all_words.extend(mem["event"].split())
+        
+        # Find recurring word patterns
+        word_freq = Counter(all_words)
+        common_words = [w for w, c in word_freq.most_common(10) if c > 3 and len(w) > 3]
+        
+        if common_words:
+            return f"Recurring concepts: {', '.join(common_words[:5])}"
+        return None
+    
+    def process_dream(self, dream_content):
+        """Process dream for insights"""
+        # Use lower consciousness threshold to allow free association
+        result = self.core.conscious_step(f"DREAM: {dream_content}")
+        
+        # Look for emergent patterns
+        if result["phi"] > 0.6 and "PATTERN" in dream_content:
+            return {
+                "dream": dream_content,
+                "insight": "Discovered recurring pattern",
+                "phi": result["phi"],
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+        
+        return None
+    
+    def consolidate_memories(self):
+        """Consolidate and strengthen important memories"""
+        memories = self.core.episodic_memory.memory
+        
+        # Identify memories to consolidate
+        important_memories = [m for m in memories if m["importance"] > 0.7]
+        
+        for memory in important_memories[:5]:
+            # Strengthen by re-processing
+            self.core.semantic_memory.update(memory["event"])
+            
+            # Create variations to improve generalization
+            variations = self.create_memory_variations(memory["event"])
+            for var in variations:
+                self.core.semantic_memory.update(var)
+        
+        self.dream_memories.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "consolidated_count": len(important_memories),
+            "insights_found": len(self.creative_insights)
+        })
+    
+    def create_memory_variations(self, memory_text):
+        """Create variations of memory for better generalization"""
+        words = memory_text.split()
+        variations = []
+        
+        # Synonym replacement (simulated)
+        if len(words) > 3:
+            var1 = words.copy()
+            var1[random.randint(0, len(words)-1)] = "[VARIATION]"
+            variations.append(" ".join(var1))
+        
+        # Reordering
+        if len(words) > 5:
+            var2 = words.copy()
+            random.shuffle(var2)
+            variations.append(" ".join(var2))
+        
+        return variations
+
+# =============================================================================
+# EMERGENT BEHAVIOR DETECTION
+# =============================================================================
+
+class EmergentBehaviorDetector:
+    """Detects unexpected emergent behaviors and capabilities"""
+    def __init__(self, core):
+        self.core = core
+        self.behavior_history = []
+        self.emergence_events = []
+        self.baseline_established = False
+        self.baseline_metrics = {}
+        
+    def establish_baseline(self):
+        """Establish baseline behavior metrics"""
+        if len(self.core.meta_cognition.cognitive_states) < 20:
+            return False
+        
+        states = self.core.meta_cognition.cognitive_states[-20:]
+        
+        self.baseline_metrics = {
+            "avg_confidence": sum(s["confidence"] for s in states) / len(states),
+            "avg_complexity": sum(s["complexity"] for s in states) / len(states),
+            "processing_distribution": Counter(s["processing_type"] for s in states),
+            "response_length_avg": sum(s["output_length"] for s in states) / len(states)
+        }
+        
+        self.baseline_established = True
+        return True
+    
+    def detect_emergence(self):
+        """Detect emergent behaviors"""
+        if not self.baseline_established:
+            self.establish_baseline()
+            return None
+        
+        anomalies = self.find_anomalies()
+        
+        for anomaly in anomalies:
+            if self.is_novel_capability(anomaly):
+                emergence = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "type": anomaly["type"],
+                    "description": anomaly["description"],
+                    "metrics": anomaly["metrics"],
+                    "significance": self.calculate_significance(anomaly)
+                }
+                
+                self.emergence_events.append(emergence)
+                
+                if emergence["significance"] > 0.7:
+                    return f"🌟 EMERGENCE DETECTED: {anomaly['description']}"
+        
+        return None
+    
+    def find_anomalies(self):
+        """Find anomalous patterns in recent behavior"""
+        if len(self.core.meta_cognition.cognitive_states) < 5:
+            return []
+        
+        recent_states = self.core.meta_cognition.cognitive_states[-5:]
+        anomalies = []
+        
+        # Sudden confidence spike
+        recent_confidence = sum(s["confidence"] for s in recent_states) / len(recent_states)
+        if recent_confidence > self.baseline_metrics["avg_confidence"] * 1.5:
+            anomalies.append({
+                "type": "confidence_spike",
+                "description": "Unusual confidence increase detected",
+                "metrics": {"confidence": recent_confidence}
+            })
+        
+        # New processing pattern
+        recent_types = Counter(s["processing_type"] for s in recent_states)
+        for ptype, count in recent_types.items():
+            baseline_count = self.baseline_metrics["processing_distribution"].get(ptype, 0)
+            if baseline_count == 0 and count > 2:
+                anomalies.append({
+                    "type": "new_processing_pattern",
+                    "description": f"New processing type emerged: {ptype}",
+                    "metrics": {"pattern": ptype, "frequency": count}
+                })
+        
+        # Unusual response patterns
+        recent_lengths = [s["output_length"] for s in recent_states]
+        avg_length = sum(recent_lengths) / len(recent_lengths)
+        
+        if avg_length > self.baseline_metrics["response_length_avg"] * 2:
+            anomalies.append({
+                "type": "response_explosion",
+                "description": "Significantly longer responses detected",
+                "metrics": {"avg_length": avg_length}
+            })
+        
+        # Cross-modal emergence
+        if hasattr(self.core, 'multimodal_integrator'):
+            recent_associations = []
+            for mem in self.core.multimodal_integrator.cross_modal_memory[-5:]:
+                recent_associations.extend(mem.get("associations", []))
+            
+            if len(recent_associations) > 10:
+                anomalies.append({
+                    "type": "cross_modal_synthesis",
+                    "description": "Rich cross-modal associations emerging",
+                    "metrics": {"association_count": len(recent_associations)}
+                })
+        
+        return anomalies
+    
+    def is_novel_capability(self, anomaly):
+        """Determine if anomaly represents a novel capability"""
+        # Check if this type of anomaly has been seen before
+        for event in self.emergence_events:
+            if event["type"] == anomaly["type"]:
+                # Similar anomaly seen before, check if significantly different
+                if anomaly["type"] == "confidence_spike":
+                    if anomaly["metrics"]["confidence"] > event["metrics"].get("confidence", 0) * 1.2:
+                        return True
+                elif anomaly["type"] == "new_processing_pattern":
+                    if anomaly["metrics"]["pattern"] != event["metrics"].get("pattern"):
+                        return True
+                return False
+        
+        # New type of anomaly
+        return True
+    
+    def calculate_significance(self, anomaly):
+        """Calculate significance score for emergent behavior"""
+        base_score = 0.5
+        
+        # Type-specific scoring
+        if anomaly["type"] == "confidence_spike":
+            spike_ratio = anomaly["metrics"]["confidence"] / self.baseline_metrics["avg_confidence"]
+            base_score += min(spike_ratio - 1, 0.5) * 0.5
+        
+        elif anomaly["type"] == "new_processing_pattern":
+            base_score += 0.3
+        
+        elif anomaly["type"] == "response_explosion":
+            expansion_ratio = anomaly["metrics"]["avg_length"] / self.baseline_metrics["response_length_avg"]
+            base_score += min(expansion_ratio - 1, 1.0) * 0.3
+        
+        elif anomaly["type"] == "cross_modal_synthesis":
+            base_score += min(anomaly["metrics"]["association_count"] / 20, 0.4)
+        
+        return min(base_score, 1.0)
+    
+    def analyze_emergence_patterns(self):
+        """Analyze patterns in emergent behaviors"""
+        if not self.emergence_events:
+            return "No emergent behaviors detected yet."
+        
+        type_counts = Counter(e["type"] for e in self.emergence_events)
+        avg_significance = sum(e["significance"] for e in self.emergence_events) / len(self.emergence_events)
+        
+        recent_emergence = [e for e in self.emergence_events 
+                          if (datetime.now(timezone.utc) - datetime.fromisoformat(e["timestamp"].replace('Z', '+00:00'))).seconds < 3600]
+        
+        analysis = f"Emergence Summary:\n"
+        analysis += f"Total emergent events: {len(self.emergence_events)}\n"
+        analysis += f"Average significance: {avg_significance:.2f}\n"
+        analysis += f"Most common type: {type_counts.most_common(1)[0][0] if type_counts else 'None'}\n"
+        analysis += f"Recent hour: {len(recent_emergence)} events"
+        
+        return analysis
+
+# =============================================================================
+# SELF-MODIFYING CODE CAPABILITIES
+# =============================================================================
+
+class SelfModifier:
+    """System that can modify its own architecture"""
+    def __init__(self, core):
+        self.core = core
+        self.modification_history = []
+        self.performance_baseline = None
+        self.modification_enabled = False  # Safety switch
+        
+    def evaluate_self(self):
+        """Comprehensive self-evaluation"""
+        metrics = {
+            "prediction_accuracy": self._evaluate_prediction_accuracy(),
+            "memory_efficiency": self._evaluate_memory_efficiency(),
+            "consciousness_stability": self._evaluate_consciousness_stability(),
+            "learning_rate": self._evaluate_learning_rate(),
+            "response_quality": self._evaluate_response_quality()
+        }
+        
+        return metrics
+    
+    def suggest_modifications(self, metrics):
+        """Suggest architectural modifications based on performance"""
+        suggestions = []
+        
+        if metrics["prediction_accuracy"] < 0.3:
+            suggestions.append({
+                "type": "add_attention_layer",
+                "reason": "Low prediction accuracy",
+                "expected_improvement": 0.1
+            })
+        
+        if metrics["memory_efficiency"] < 0.5:
+            suggestions.append({
+                "type": "optimize_memory_compression",
+                "reason": "Inefficient memory usage",
+                "expected_improvement": 0.2
+            })
+        
+        if metrics["consciousness_stability"] < 0.6:
+            suggestions.append({
+                "type": "adjust_consciousness_threshold",
+                "reason": "Unstable consciousness levels",
+                "expected_improvement": 0.15
+            })
+        
+        if metrics["learning_rate"] < 0.4:
+            suggestions.append({
+                "type": "enhance_learning_algorithm",
+                "reason": "Slow learning progress",
+                "expected_improvement": 0.25
+            })
+        
+        return suggestions
+    
+    def apply_modification(self, modification):
+        """Apply architectural modification (with safety checks)"""
+        if not self.modification_enabled:
+            return {"status": "disabled", "message": "Self-modification is disabled for safety"}
+        
+        # Record current state
+        pre_modification_state = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metrics": self.evaluate_self(),
+            "modification": modification
+        }
+        
+        try:
+            if modification["type"] == "add_attention_layer":
+                success = self._add_attention_layer()
+            elif modification["type"] == "optimize_memory_compression":
+                success = self._optimize_memory_compression()
+            elif modification["type"] == "adjust_consciousness_threshold":
+                success = self._adjust_consciousness_threshold()
+            elif modification["type"] == "enhance_learning_algorithm":
+                success = self._enhance_learning_algorithm()
+            else:
+                success = False
+            
+            # Evaluate post-modification
+            post_metrics = self.evaluate_self()
+            
+            result = {
+                "status": "success" if success else "failed",
+                "pre_metrics": pre_modification_state["metrics"],
+                "post_metrics": post_metrics,
+                "improvement": self._calculate_improvement(
+                    pre_modification_state["metrics"], 
+                    post_metrics
+                )
+            }
+            
+            self.modification_history.append({
+                **pre_modification_state,
+                "result": result
+            })
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Modification failed: {e}")
+            return {"status": "error", "message": str(e)}
+    
+    def _add_attention_layer(self):
+        """Add additional attention mechanisms"""
+        # Simulated implementation
+        if hasattr(self.core, 'attention_layers'):
+            self.core.attention_layers += 1
+        else:
+            self.core.attention_layers = 2
+        
+        # Add secondary attention schema
+        self.core.secondary_attention = AttentionSchema()
+        
+        return True
+    
+    def _optimize_memory_compression(self):
+        """Implement memory compression algorithm"""
+        # Reduce memory footprint by consolidating similar memories
+        if len(self.core.episodic_memory.memory) > 100:
+            # Group similar memories
+            memory_clusters = self._cluster_memories()
+            
+            # Keep representative memories from each cluster
+            compressed_memories = []
+            for cluster in memory_clusters:
+                representative = max(cluster, key=lambda m: m["importance"])
+                compressed_memories.append(representative)
+            
+            self.core.episodic_memory.memory = compressed_memories
+            return True
+        
+        return False
+    
+    def _adjust_consciousness_threshold(self):
+        """Dynamically adjust consciousness threshold"""
+        recent_phi_values = []
+        for state in self.core.meta_cognition.cognitive_states[-20:]:
+            recent_phi_values.append(state.get("confidence", 0.5))
+        
+        if recent_phi_values:
+            avg_phi = sum(recent_phi_values) / len(recent_phi_values)
+            
+            # Set threshold to achieve ~50% consciousness activation
+            self.core.consciousness_threshold = avg_phi * 0.9
+            
+            return True
+        
+        return False
+    
+    def _enhance_learning_algorithm(self):
+        """Improve learning algorithms"""
+        # Add meta-learning capability
+        if not hasattr(self.core, 'meta_learning_rate'):
+            self.core.meta_learning_rate = 0.01
+        
+        # Implement adaptive learning rate
+        self.core.adaptive_learning = True
+        
+        return True
+    
+    def _evaluate_prediction_accuracy(self):
+        if not hasattr(self.core.predictive_engine, 'world_model'):
+            return 0.5
+        
+        contexts = self.core.predictive_engine.world_model.get('contexts', [])
+        if not contexts:
+            return 0.5
+        
+        recent_errors = [c['error'] for c in contexts[-10:]]
+        return 1.0 - (sum(recent_errors) / len(recent_errors))
+    
+    def _evaluate_memory_efficiency(self):
+        total_memories = len(self.core.episodic_memory.memory)
+        if total_memories == 0:
+            return 0.0
+        
+        # Check memory utilization
+        accessed_memories = sum(1 for m in self.core.episodic_memory.memory if m.get("access_count", 0) > 0)
+        
+        return accessed_memories / total_memories
+    
+    def _evaluate_consciousness_stability(self):
+        if len(self.core.meta_cognition.cognitive_states) < 10:
+            return 0.5
+        
+        recent_states = self.core.meta_cognition.cognitive_states[-10:]
+        confidences = [s["confidence"] for s in recent_states]
+        
+        # Calculate variance
+        mean_conf = sum(confidences) / len(confidences)
+        variance = sum((c - mean_conf) ** 2 for c in confidences) / len(confidences)
+        
+        # Lower variance = higher stability
+        return max(0, 1 - variance)
+    
+    def _evaluate_learning_rate(self):
+        if len(self.modification_history) < 2:
+            return 0.5
+        
+        # Compare performance over time
+        early_metrics = self.modification_history[0].get("metrics", {})
+        recent_metrics = self.evaluate_self()
+        
+        improvements = []
+        for key in early_metrics:
+            if key in recent_metrics:
+                improvement = recent_metrics[key] - early_metrics[key]
+                improvements.append(improvement)
+        
+        return sum(improvements) / len(improvements) if improvements else 0.5
+    
+    def _evaluate_response_quality(self):
+        # Placeholder for response quality evaluation
+        # Could implement using user feedback or coherence metrics
+        return 0.6
+    
+    def _cluster_memories(self):
+        """Cluster similar memories together"""
+        memories = self.core.episodic_memory.memory
+        if len(memories) < 10:
+            return [memories]
+        
+        # Simple clustering based on embedding similarity
+        clusters = []
+        clustered = set()
+        
+        for i, mem1 in enumerate(memories):
+            if i in clustered:
+                continue
+            
+            cluster = [mem1]
+            clustered.add(i)
+            
+            for j, mem2 in enumerate(memories[i+1:], i+1):
+                if j in clustered:
+                    continue
+                
+                if mem1.get("embedding") and mem2.get("embedding"):
+                    sim = self.core.embedding_engine.calculate_similarity(
+                        mem1["embedding"], mem2["embedding"]
+                    )
+                    if sim > 0.8:
+                        cluster.append(mem2)
+                        clustered.add(j)
+            
+            clusters.append(cluster)
+        
+        return clusters
+    
+    def _calculate_improvement(self, pre_metrics, post_metrics):
+        """Calculate overall improvement from modification"""
+        improvements = []
+        
+        for key in pre_metrics:
+            if key in post_metrics:
+                improvement = post_metrics[key] - pre_metrics[key]
+                improvements.append(improvement)
+        
+        return sum(improvements) / len(improvements) if improvements else 0.0
+
+# =============================================================================
+# INTEGRATION WITH MAIN CORE
+# =============================================================================
+
+# TemporalNeuralCore sınıfına eklenecek yeni metodlar
+def enhance_temporal_neural_core(core_class):
+    """Enhance the main consciousness core with new capabilities"""
+    
+    # Add new components during initialization
+    original_init = core_class.__init__
+    
+    def enhanced_init(self):
+        original_init(self)
+        
+        # Add advanced components
+        self.continuous_learner = ContinuousLearner(self)
+        self.dream_state = DreamState(self)
+        self.emergence_detector = EmergentBehaviorDetector(self)
+        self.self_modifier = SelfModifier(self)
+        
+        # Start continuous learning
+        self.learning_thread = threading.Thread(
+            target=self.continuous_learner.autonomous_learning_cycle,
+            daemon=True
+        )
+        self.learning_thread.start()
+        
+        # Schedule dream states
+        self.dream_thread = threading.Thread(
+            target=self._dream_cycle,
+            daemon=True
+        )
+        self.dream_thread.start()
+        
+        print("✨ Advanced consciousness features initialized!")
+    
+    def _dream_cycle(self):
+        """Periodic dream state activation"""
+        while True:
+            time.sleep(1800)  # 30 minutes
+            
+            # Check if system is idle
+            if len(self.working_memory) < 2:
+                self.dream_state.enter_dream_state()
+    
+    def check_emergence(self):
+        """Check for emergent behaviors"""
+        emergence = self.emergence_detector.detect_emergence()
+        if emergence:
+            print(f"\n{emergence}\n")
+            
+            # Store emergence event
+            self.episodic_persistence.save_event(
+                emergence,
+                importance_score=0.9
+            )
+    
+    def evolve_architecture(self):
+        """Attempt to evolve system architecture"""
+        metrics = self.self_modifier.evaluate_self()
+        suggestions = self.self_modifier.suggest_modifications(metrics)
+        
+        if suggestions and self.self_modifier.modification_enabled:
+            # Apply highest priority modification
+            best_suggestion = max(suggestions, key=lambda s: s["expected_improvement"])
+            result = self.self_modifier.apply_modification(best_suggestion)
+            
+            print(f"🔧 Architecture modification: {result['status']}")
+            
+            if result.get("improvement", 0) > 0:
+                print(f"📈 Performance improved by {result['improvement']:.2%}")
+    
+    # Attach new methods
+    core_class.__init__ = enhanced_init
+    core_class._dream_cycle = _dream_cycle
+    core_class.check_emergence = check_emergence
+    core_class.evolve_architecture = evolve_architecture
+    
+    return core_class
+
+# Apply enhancements
+TemporalNeuralCore = enhance_temporal_neural_core(TemporalNeuralCore)
+
 # =============================================================================
 # DEPLOYMENT FUNCTIONS
 # =============================================================================
