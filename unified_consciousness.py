@@ -1625,8 +1625,17 @@ PREDICTIVE STATUS:
     
     def start_replay_loop(self):
         if self.replay_task is None:
-            self.replay_task = asyncio.create_task(self.episodic_replay_loop())
-
+            # Event loop yoksa oluştur
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # Task'i thread-safe bir şekilde başlat
+            self.replay_task = asyncio.run_coroutine_threadsafe(
+                self.episodic_replay_loop(), 
+                loop
 # =============================================================================
 # DEPLOYMENT FUNCTIONS
 # =============================================================================
