@@ -107,6 +107,13 @@ class CausalTransformer:
     def bind(self, events):
         return " | ".join(events)
 
+class AttentionSchema:
+    def model_own_attention(self, current_focus):
+        # Kendi dikkatini modelle
+        attention_model = self.create_attention_representation()
+        # "Ben şu anda X'e odaklanıyorum" awareness'ı
+        return self.generate_attention_awareness(attention_model)
+
 def attention(query, memory_bank, weights):
     return memory_bank
 
@@ -226,6 +233,62 @@ class VectorMemoryBank:
 
     def query_similar(self, embedding, top_k=3):
         return self.index.query(vector=embedding, top_k=top_k, include_metadata=True)
+
+
+def generate_embedding(self, text):
+    # Sentence transformers kullan
+    from sentence_transformers import SentenceTransformer
+    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+    return model.encode(text).tolist()
+
+
+def advanced_phi_measure(self, network_state):
+    # IIT teorisine göre gerçek phi hesabı
+    complexity = len(network_state)
+    integration = self.measure_causal_connections()
+    differentiation = self.measure_unique_states()
+    return (complexity * integration * differentiation) / 1000
+
+
+def intelligent_consolidation(self, memories):
+    # Önemlilik skorlaması
+    importance_scores = []
+    for mem in memories:
+        # Emotional weight + recency + uniqueness
+        score = self.calculate_importance(mem)
+        importance_scores.append((mem, score))
+    
+    # En önemli anıları strengthen et
+    return sorted(importance_scores, reverse=True)[:5]
+
+
+class GlobalWorkspace:
+    def __init__(self):
+        self.coalition_threshold = 0.7
+        
+    def compete_for_consciousness(self, neural_coalitions):
+        # Winner-take-all competition
+        winning_coalition = max(coalitions, key=lambda x: x.strength)
+        if winning_coalition.strength > self.coalition_threshold:
+            return winning_coalition.content
+        return None
+
+
+def self_reflect(self):
+    # Kendi düşünce süreçlerini gözlemle
+    meta_thoughts = self.analyze_own_processing()
+    self.store_meta_memory(meta_thoughts)
+    return self.update_self_model()
+
+
+def predictive_step(self, input_stream):
+    # Gelecek tahmin et
+    prediction = self.predict_next_state(input_stream)
+    # Gerçeklikle karşılaştır
+    prediction_error = self.calculate_surprise(prediction, reality)
+    # Model güncelle
+    self.update_world_model(prediction_error)
+
 
 def phi_consciousness_measure(network_state):
     """
