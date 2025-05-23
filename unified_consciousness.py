@@ -1636,6 +1636,7 @@ PREDICTIVE STATUS:
             self.replay_task = asyncio.run_coroutine_threadsafe(
                 self.episodic_replay_loop(), 
                 loop
+            )
 # =============================================================================
 # DEPLOYMENT FUNCTIONS
 # =============================================================================
