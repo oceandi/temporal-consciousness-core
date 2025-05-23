@@ -127,7 +127,7 @@ class EpisodicMemoryPersistence:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "event": event,
             "embedding": embedding.tolist() if embedding is not None else None,
-            "importance": importance_score,
+            "importance": float(importance_score),  # float32'yi normal float'a çevir
             "id": hashlib.md5(f"{event}{datetime.now()}".encode()).hexdigest()
         }
         with open(self.path, "a", encoding="utf-8") as f:
