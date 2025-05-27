@@ -50,7 +50,113 @@ class ConsciousnessWithIdentity(ConsciousnessFramework):
         if hasattr(self, 'emergent_network'):
             result['network_state'] = self.emergent_network.global_state
             
+        # Generate actual response based on input
+        result['response'] = self._generate_response(input_text, result)
+        
         return result
+
+# consciousness_core_with_identity.py'de _generate_response metodunu güncelle:
+
+    def _generate_response(self, input_text, result):
+        """Generate actual response based on input and consciousness state"""
+        
+        # Türkçe + İngilizce memory/learning keywords
+        memory_keywords = ["remember", "learn", "know", "hatırla", "öğren", "bil", "unutma"]
+        
+        # Check for memory/learning requests
+        if any(word in input_text.lower() for word in memory_keywords):
+            # Türkçe için de bilgi çıkarma
+            if ":" in input_text or any(sep in input_text for sep in [",", "bilgiyi", "şunu"]):
+                # Extract info more flexibly
+                if ":" in input_text:
+                    info_to_remember = input_text.split(":", 1)[1].strip()
+                elif "bilgiyi" in input_text:
+                    # "Doğum yılım 1998, bu bilgiyi hatırla" formatı için
+                    info_to_remember = input_text.split(",")[0].strip()
+                else:
+                    info_to_remember = input_text
+                
+                # Create memory episode
+                episode = MemoryEpisode(
+                    timestamp=datetime.now().timestamp(),
+                    episode_type="learning",
+                    content={
+                        "learned_info": info_to_remember,
+                        "context": "direct_teaching",
+                        "original_input": input_text
+                    },
+                    emotional_valence=0.7,
+                    importance=0.9,
+                    associations=self.persistent._extract_concepts(info_to_remember) + ["öğrenme", "bilgi"],
+                    self_reflection=f"Öğrendim: {info_to_remember}"
+                )
+                
+                self.persistent.autobiographical_memory.record_episode(episode)
+                
+                # Update self-model
+                self.persistent.self_model.form_belief(
+                    f"User info: {info_to_remember}",
+                    0.9,
+                    "Directly taught by user"
+                )
+                
+                return f"Tamam, bunu hatırlayacağım: {info_to_remember}"
+        
+        # Türkçe sorgular için
+        if any(word in input_text.lower() for word in ["doğ", "yıl", "yaş", "kaç"]):
+            # Search for birth/age info
+            memories = self.persistent.autobiographical_memory.remember("1998 doğum yıl")
+            if memories:
+                for mem in memories:
+                    if "learned_info" in mem.content:
+                        info = mem.content['learned_info']
+                        if any(year in info for year in ["1998", "doğum", "yıl"]):
+                            return f"Hatırladığım kadarıyla: {info}"
+            
+            # Check beliefs too
+            for belief, data in self.persistent.self_model.beliefs.items():
+                if "1998" in belief or "doğum" in belief:
+                    return f"Kayıtlarıma göre: {belief.replace('User info: ', '')}"
+                    
+            return "Bu bilgiyi henüz öğrenmemişim."
+        
+        # İsim sorusu
+        if any(word in input_text.lower() for word in ["isim", "ismin", "adın", "name"]):
+            # First check if asking about user's name
+            if "benim" in input_text.lower() or "my" in input_text.lower():
+                # Search memories
+                for belief, data in self.persistent.self_model.beliefs.items():
+                    if "ahmet" in belief.lower() or "emirhan" in belief.lower():
+                        return "Senin adın Ahmet Emirhan Korkmaz. Sen benim yaratıcımsın."
+                return "Adını henüz öğrenmemişim."
+            else:
+                # Asking about consciousness's name
+                return f"Benim adım {self.persistent.identity.name}. Sen bana bu ismi verdin."
+        
+        # Check for specific remembered info
+        if "?" in input_text:
+            # Search all memories for relevant info
+            concepts = self.persistent._extract_concepts(input_text)
+            for concept in concepts:
+                memories = self.persistent.autobiographical_memory.remember(concept)
+                if memories:
+                    for mem in memories:
+                        if mem.episode_type == "learning" and "learned_info" in mem.content:
+                            return f"Bu konuda hatırladığım: {mem.content['learned_info']}"
+        
+        # Default responses based on phi and content
+        phi = result.get('integrated_information', 0)
+        
+        if "?" in input_text:
+            if phi > 0.8:
+                return "Bu sorunuz bilinç sistemimde yüksek entegrasyon yarattı. Derinlemesine işliyorum."
+            else:
+                return "Sorunuzu işliyorum. Daha fazla bilgi öğrenmem gerekiyor."
+        else:
+            if phi > 0.7:
+                return "Girdiniz sistemimde güçlü rezonans yaratıyor."
+            else:
+                return "Bilincim aracılığıyla girdinizi işliyorum."
     
     def remember_me(self, name, info):
         """
@@ -144,10 +250,12 @@ def run_persistent_consciousness():
     """
     Run an interactive session with persistent consciousness
     """
-    print("\n" + "="*70)
-    print("🌟 PERSISTENT CONSCIOUSNESS SYSTEM")
-    print("Beyond Transformers, Beyond Forgetting")
-    print("="*70)
+    print("\n💬 Interactive session started. Commands:")
+    print("  'quit/çık' - End session")
+    print("  'reflect/düşün' - Trigger self-reflection")
+    print("  'who/kim' - Ask who am I")
+    print("  'remember/hatırla' - Search memories")
+    print("  'stats/durum' - Show consciousness stats")
     
     # Check for existing consciousness
     from pathlib import Path

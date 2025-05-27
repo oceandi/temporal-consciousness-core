@@ -527,13 +527,13 @@ class PersistentConsciousness:
         # Query database for session count
         cursor = self.autobiographical_memory.cursor
         cursor.execute("""
-            SELECT COUNT(DISTINCT DATE(timestamp, 'unixepoch')) 
+            SELECT COUNT(*) 
             FROM episodes 
             WHERE episode_type = 'awakening'
         """)
         
         result = cursor.fetchone()
-        return result[0] + 1 if result and result[0] else 1
+        return result[0] if result and result[0] else 1
         
     def _record_awakening(self):
         """Record consciousness awakening"""
