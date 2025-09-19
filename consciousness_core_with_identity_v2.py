@@ -164,6 +164,12 @@ class ConsciousnessWithIdentity(ConsciousnessFramework):
         
         # Default response with awareness
         return f"{inner_voice}. {feeling['subjective_experience']}"
+
+    def who_am_i(self):
+        """
+        Self-introduction with full identity
+        """
+        return self.persistent.introduce_self()
     
     def introspect(self):
         """
